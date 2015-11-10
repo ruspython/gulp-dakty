@@ -1,13 +1,18 @@
 'use strict';
 
-var gutil = require('gulp-util'),
+var through = require('through2'),
+    gutil = require('gulp-util'),
     PluginError = gutil.PluginError,
-    fs = require('fs')
+    File = gutil.File,
+    fs = require('fs'),
+    path = require('path'),
+    stream = require('stream'),
+    mkdirp = require('mkdirp')
     ;
 
 function writeToDest(filename, body, resolve, reject) {
-    return new Promise(function(resolve, reject) {
-        fs.writeFile(filename, body, function (err,data) {
+    return new Promise(function (resolve, reject) {
+        fs.writeFile(filename, body, function (err, data) {
             if (err) {
                 reject(err);
             }
@@ -21,8 +26,8 @@ function writeToDest(filename, body, resolve, reject) {
 }
 
 function readSource(filename) {
-    return new Promise(function(resolve, reject) {
-        fs.readFile(filename, 'utf8', function (err,data) {
+    return new Promise(function (resolve, reject) {
+        fs.readFile(filename, 'utf8', function (err, data) {
             if (err) {
                 reject(err);
             }
@@ -33,23 +38,43 @@ function readSource(filename) {
     });
 }
 
+function mkDir(dir) {
+    return new Promise(function (resolve, reject) {
+        mkdirp(dir, function (err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve()
+            }
+        });
+    });
+}
+
 module.exports = function (srcPath, destPath, daktConfig) {
-    var key
+    var key,
+        fullPath
         ;
     if (!(srcPath && destPath && daktConfig)) {
         throw new PluginError('gulp-dakty', 'Missing options for gulp-dakty');
     }
 
-    readSource(srcPath + 'utils.js')
-        .then(function (data) {
-            return writeToDest(destPath + 'utils.js', data);
-        })
-        .then(function () {
-            console.log('success');
-        })
-    ;
+    for (key in daktConfig) {
+        fullPath = destPath + key;
+        console.log(fullPath);
+        (function (path) {
+            mkDir(path)
+                .then(function () {
+                    return readSource(srcPath + '/utils.js')
+                })
+                .then(function (data) {
+                    return writeToDest(path + '/utils.js', data);
+                })
+                .then(function () {
+                })
+            ;
+        }(fullPath))
 
-    console.log('end of module');
+    }
 
-    return 'hey there'
+    return;
 };

@@ -22,6 +22,11 @@
   "devDependencies": {
     "gulp": "^3.9.0",
     "gulp-concat": "^2.6.0",
-    "gulp-util": "^3.0.7"
+    "gulp-util": "^3.0.7",
+    "mkdirp": "^0.5.1",
+    "path": "^0.12.7",
+    "stream": "0.0.2",
+    "through": "^2.3.8",
+    "through2": "^2.0.0"
   }
 }
