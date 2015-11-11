@@ -10,6 +10,8 @@ var through = require('through2'),
     mkdirp = require('mkdirp')
     ;
 
+const VAR_REGEX = /\/\*==([_\w]*).([_\w]*)==\*\//g;
+
 function writeToDest(filename, body, resolve, reject) {
     return new Promise(function (resolve, reject) {
         fs.writeFile(filename, body, function (err, data) {
@@ -50,31 +52,49 @@ function mkDir(dir) {
     });
 }
 
-module.exports = function (srcPath, destPath, daktConfig) {
-    var key,
-        fullPath
+function withReplacedVars(siteObject, body) {
+    var match,
+        matchVar,
+        variable
         ;
+    match = VAR_REGEX.exec(body);
+    matchVar = match[match.length - 1]; // Variable of this key must be replaced
+    while (match) {
+        variable = siteObject[matchVar];
+        if (typeof variable !== 'object') {
+            if (typeof variable === 'string') {
+                variable = '"' + variable + '"'; // Surrounding with quote
+            } else if (typeof variable === 'undefined') {
+                variable = "null";
+            }
+            body = body.replace(match[0], "=" + variable);
+        } // Adding global variables
+
+        match = VAR_REGEX.exec(body);
+        matchVar = match ? match[match.length - 1] : '';
+    }
+    return body;
+}
+
+module.exports = function (srcPath, destPath, daktConfig) {
+    var key
+        ;
+
     if (!(srcPath && destPath && daktConfig)) {
         throw new PluginError('gulp-dakty', 'Missing options for gulp-dakty');
     }
-
     for (key in daktConfig) {
-        fullPath = destPath + key;
-        console.log(fullPath);
-        (function (path) {
-            mkDir(path)
+        (function (key) {
+            mkDir(destPath + key)
                 .then(function () {
-                    return readSource(srcPath + '/utils.js')
+                    return readSource(srcPath + 'daktyloskop.js')
                 })
                 .then(function (data) {
-                    return writeToDest(path + '/utils.js', data);
-                })
-                .then(function () {
+                    data = withReplacedVars(daktConfig[key], data);
+                    return writeToDest(destPath + key + '/daktyloskop.js', data);
                 })
             ;
-        }(fullPath))
+        }(key))
 
     }
-
-    return;
 };
