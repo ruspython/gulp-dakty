@@ -117,9 +117,6 @@ module.exports = function (srcPath, destPath, daktConfig) {
                     .then(function () {
                         prependModules(destPath + siteName + '/daktyloskop.tmp.js', srcPath, daktConfig[siteName]);
                     })
-                    .then(function () {
-                        console.log(siteName)
-                    })
                 ;
             }(siteName))
         )
