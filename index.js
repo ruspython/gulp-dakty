@@ -89,7 +89,7 @@ function prependModules(filename, srcPath, siteObject) {
     for (moduleName in modules) {
         modulePaths.push(srcPath + modules[moduleName]);
     }
-    modulePaths.push(filename);
+    modulePaths.unshift(filename);
 
     concat(modulePaths, filename.replace('.tmp', ''), function () {});
 }
