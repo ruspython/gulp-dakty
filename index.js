@@ -90,32 +90,39 @@ function prependModules(filename, srcPath, siteObject) {
         modulePaths.push(srcPath + modules[moduleName]);
     }
     modulePaths.unshift(filename);
-
-    concat(modulePaths, filename.replace('.tmp', ''), function () {});
+    concat(modulePaths, filename.replace('.tmp', ''), function () {
+    });
 }
 
 module.exports = function (srcPath, destPath, daktConfig) {
-    var siteName
+    var siteName,
+        sitePromises = []
         ;
 
     if (!(srcPath && destPath && daktConfig)) {
         throw new PluginError('gulp-dakty', 'Missing options for gulp-dakty');
     }
-    //TODO: closure needs fix
+
     for (siteName in daktConfig) {
-        (function (siteName) {
-            mkDir(destPath + siteName)
-                .then(function () {
-                    return readSource(srcPath + 'daktyloskop.js')
-                })
-                .then(function (data) {
-                    data = withReplacedVars(daktConfig[siteName], data);
-                    return writeToDest(destPath + siteName + '/daktyloskop.tmp.js', data);
-                })
-                .then(function () {
-                    prependModules(destPath + siteName + '/daktyloskop.tmp.js', srcPath, daktConfig[siteName]);
-                })
-            ;
-        }(siteName))
+        sitePromises.push(
+            (function (siteName) {
+                return mkDir(destPath + siteName)
+                    .then(function () {
+                        return readSource(srcPath + 'daktyloskop.js')
+                    })
+                    .then(function (data) {
+                        data = withReplacedVars(daktConfig[siteName], data);
+                        return writeToDest(destPath + siteName + '/daktyloskop.tmp.js', data);
+                    })
+                    .then(function () {
+                        prependModules(destPath + siteName + '/daktyloskop.tmp.js', srcPath, daktConfig[siteName]);
+                    })
+                    .then(function () {
+                        console.log(siteName)
+                    })
+                ;
+            }(siteName))
+        )
     }
+    return Promise.all(sitePromises);
 };

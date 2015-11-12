@@ -1,7 +1,7 @@
 {
-  "name": "gulp-dakty",
+  "name": "dakty",
   "version": "0.0.1",
-  "description": "Gulp plugin for building daktyloskop scripts",
+  "description": "Module for building daktyloskop scripts",
   "main": "index.js",
   "directories": {
     "test": "test"
