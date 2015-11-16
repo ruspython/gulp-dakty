@@ -8,11 +8,10 @@ var through = require('through2'),
     path = require('path'),
     stream = require('stream'),
     mkdirp = require('mkdirp'),
-    buildify = require('buildify'),
     concat = require('concat')
     ;
 
-const VAR_REGEX = /\/\*==([_\w]*).([_\w]*)==\*\//g;
+var VAR_REGEX = /\/\*==([_\w]*).([_\w]*)==\*\//g;
 
 function writeToDest(filename, body, resolve, reject) {
     return new Promise(function (resolve, reject) {
